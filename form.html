@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+form {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+label { display: block; }
+
+input[type=text], select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit] {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+#message {
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Remplir ce formulaire</h2>
+
+<!-- FORMULAIRE CORRIGÉ -->
+<form id="stageForm">
+  
+  <label for="nom">Nom</label>
+  <input type="text" id="nom" name="nom" placeholder="Ton Nom.." required>
+
+  <label for="prenom">Prénom</label>
+  <input type="text" id="prenom" name="prenom" placeholder="Ton Prénom.." required>
+
+  <label for="email">Email</label>
+  <input type="text" id="email" name="email" placeholder="Ton Email.." required>
+
+  <label for="universite">Université</label>
+  <input type="text" id="universite" name="universite" placeholder="Votre université.." required>
+
+  <label for="specialite">Spécialité</label>
+  <input type="text" id="specialite" name="specialite" placeholder="Votre spécialité.." required>
+
+  <label for="sujet">Sujet</label>
+  <select id="sujet" name="sujet" required>
+    <option value="">-- Sélectionner un sujet --</option>
+    <option value="Sujet 1">Sujet 1</option>
+    <option value="Sujet 2">Sujet 2</option>
+    <option value="Sujet 3">Sujet 3</option>
+  </select>
+  
+  <input type="submit" value="Envoyer">
+</form>
+
+<p id="message"></p>
+
+<script>
+const form = document.getElementById("stageForm");
+const messageEl = document.getElementById("message");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  messageEl.textContent = ""; // reset
+  const btn = form.querySelector('input[type="submit"]');
+  btn.disabled = true;
+  btn.value = "Envoi en cours...";
+
+  try {
+    const data = Object.fromEntries(new FormData(form));
+
+    const response = await fetch("http://localhost:3000/api/demandes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    // Si la requête n'atteint pas le serveur, on aura une exception (TypeError)
+    // Sinon on lit la réponse JSON
+    const result = await response.json().catch(()=>({ message: response.statusText || "Réponse non JSON" }));
+
+    if (!response.ok) {
+      // erreur côté serveur
+      messageEl.style.color = "red";
+      messageEl.textContent = "Erreur serveur : " + (result.error || result.message || response.status);
+      console.error("Erreur requête :", response.status, result);
+    } else {
+      messageEl.style.color = "green";
+      messageEl.textContent = result.message || "Demande envoyée avec succès !";
+      form.reset();
+      console.log("Réponse OK :", result);
+    }
+  } catch (err) {
+    // échec réseau (CORS, serveur arrêté, URL incorrecte...)
+    messageEl.style.color = "red";
+    messageEl.textContent = "Envoi échoué : " + (err.message || err);
+    console.error("Fetch error :", err);
+  } finally {
+    btn.disabled = false;
+    btn.value = "Envoyer";
+  }
+});
+</script>
+
+
+</body>
+</html>
