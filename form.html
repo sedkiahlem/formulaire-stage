@@ -90,7 +90,8 @@ form.addEventListener("submit", async (e) => {
   try {
     const data = Object.fromEntries(new FormData(form));
 
-    const response = await fetch("http://localhost:3000/api/demandes", {
+    fetch("https://formulaire-stage.onrender.com/api/demandes", {
+
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
