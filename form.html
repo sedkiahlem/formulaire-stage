@@ -81,48 +81,49 @@ const form = document.getElementById("stageForm");
 const messageEl = document.getElementById("message");
 
 form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  messageEl.textContent = ""; // reset
-  const btn = form.querySelector('input[type="submit"]');
-  btn.disabled = true;
-  btn.value = "Envoi en cours...";
+    e.preventDefault();
 
-  try {
-    const data = Object.fromEntries(new FormData(form));
+    // Reset message
+    messageEl.textContent = "";
+    messageEl.style.color = "black";
 
-    fetch("https://formulaire-stage.onrender.com/api/demande", {
+    // Désactiver bouton
+    const btn = form.querySelector('input[type="submit"]');
+    btn.disabled = true;
+    btn.value = "Envoi...";
 
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    try {
+        const data = Object.fromEntries(new FormData(form));
 
-    // Si la requête n'atteint pas le serveur, on aura une exception (TypeError)
-    // Sinon on lit la réponse JSON
-    const result = await response.json().catch(()=>({ message: response.statusText || "Réponse non JSON" }));
+        const res = await fetch("https://formulaire-stage.onrender.com/api/demande", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
 
-    if (!response.ok) {
-      // erreur côté serveur
-      messageEl.style.color = "red";
-      messageEl.textContent = "Erreur serveur : " + (result.error || result.message || response.status);
-      console.error("Erreur requête :", response.status, result);
-    } else {
-      messageEl.style.color = "green";
-      messageEl.textContent = result.message || "Demande envoyée avec succès !";
-      form.reset();
-      console.log("Réponse OK :", result);
+        const result = await res.json();
+
+        if (!res.ok) {
+            messageEl.style.color = "red";
+            messageEl.textContent = "Erreur serveur : " + (result.error || "Erreur inconnue");
+            console.error("API ERROR :", result);
+        } else {
+            messageEl.style.color = "green";
+            messageEl.textContent = result.message;
+            form.reset();
+        }
+
+    } catch (err) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Envoi échoué : " + err.message;
+        console.error("Fetch error:", err);
     }
-  } catch (err) {
-    // échec réseau (CORS, serveur arrêté, URL incorrecte...)
-    messageEl.style.color = "red";
-    messageEl.textContent = "Envoi échoué : " + (err.message || err);
-    console.error("Fetch error :", err);
-  } finally {
+
     btn.disabled = false;
     btn.value = "Envoyer";
-  }
 });
 </script>
+
 
 
 </body>
