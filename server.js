@@ -14,7 +14,7 @@ app.use(express.static(__dirname));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "form.html"));
 });
-
+require("dotenv").config();
 // Mongoose
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB connecté"))
